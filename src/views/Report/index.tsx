@@ -1,20 +1,18 @@
 import React from "react";
-import Skeleton from "@material-ui/lab/Skeleton";
-import Box from "@material-ui/core/Box";
 import Grid from "@material-ui/core/Grid";
-import Paper from "@material-ui/core/Paper";
-import Typography from "@material-ui/core/Typography";
+import { Card } from "components";
 import { reqJobReport } from "services/report";
-import numeral from "numeral";
+import { formatPrice } from "utils/misc";
 
 type ReportKeys = {
   owe?: number;
   owePrice?: number;
+  totalPrice?: number;
 };
 
 const Jobs = (props: any) => {
   const [fetching, setFetching] = React.useState(true);
-  const [data, setData] = React.useState<ReportKeys | null>(null);
+  const [data, setData] = React.useState<ReportKeys>(null!);
 
   React.useEffect(() => {
     reqJobReport(
@@ -30,38 +28,22 @@ const Jobs = (props: any) => {
 
   return (
     <Grid container spacing={2}>
-      <Grid item sm={3}>
-        <Box
-          component={Paper}
-          p={2}
-          boxShadow={0}
-          bgcolor="secondary.main"
-          color="primary.contrastText"
-        >
-          <Typography component="div" variant="body1">
-            จำนวนค้างจ่าย
-          </Typography>
-          <Typography component="div" variant="h6" align="right">
-            {fetching ? <Skeleton /> : data?.owe}
-          </Typography>
-        </Box>
+      <Grid item md={4} sm={6} xs={12}>
+        <Card label="จำนวนค้างจ่าย" value={data?.owe} loading={fetching} />
       </Grid>
-
-      <Grid item sm={3}>
-        <Box
-          component={Paper}
-          p={2}
-          boxShadow={0}
-          bgcolor="secondary.main"
-          color="primary.contrastText"
-        >
-          <Typography component="div" variant="body1">
-            จำนวนเงินค้างจ่าย
-          </Typography>
-          <Typography component="div" variant="h6" align="right">
-            {fetching ? <Skeleton /> : numeral(data?.owePrice).format("0,0.00")}
-          </Typography>
-        </Box>
+      <Grid item md={4} sm={6} xs={12}>
+        <Card
+          label="จำนวนเงินค้างจ่าย"
+          value={formatPrice(data?.owePrice)}
+          loading={fetching}
+        />
+      </Grid>
+      <Grid item md={4} sm={6} xs={12}>
+        <Card
+          label="จำนวนเงินจ่ายแล้ว"
+          value={formatPrice(data?.totalPrice)}
+          loading={fetching}
+        />
       </Grid>
     </Grid>
   );

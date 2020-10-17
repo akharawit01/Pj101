@@ -38,7 +38,7 @@ const Customer = () => {
   return (
     <Box my={3}>
       <Grid container spacing={3}>
-        <Grid item md={3}>
+        <Grid item md={3} xs={12}>
           <Box mb={2}>
             <Link to="/">
               <Typography>กลับไปหน้าหลัก</Typography>
@@ -46,7 +46,7 @@ const Customer = () => {
           </Box>
           <CustomerForm customerData={customer} />
         </Grid>
-        <Grid item md={9}>
+        <Grid item md={9} xs={12}>
           <JobLists customerId={customerId} />
         </Grid>
       </Grid>

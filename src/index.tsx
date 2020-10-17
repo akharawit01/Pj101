@@ -4,14 +4,12 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { AppProviders } from "./contexts";
-import { ReactQueryDevtools } from "react-query-devtools";
 
 ReactDOM.render(
   <React.StrictMode>
     <AppProviders>
       <App />
     </AppProviders>
-    <ReactQueryDevtools initialIsOpen={false} />
   </React.StrictMode>,
   document.getElementById("root")
 );

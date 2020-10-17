@@ -47,11 +47,11 @@ const AuthenticatedApp = () => {
             PJ-101
           </Typography>
           <Button color="inherit" onClick={signOut}>
-            Signout
+            ออกจากระบบ
           </Button>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="lg">
+      <Container maxWidth="xl">
         <AppRoutes />
       </Container>
     </div>

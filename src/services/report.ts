@@ -14,23 +14,43 @@ export const reqJobReport = async (
   }
 ) => {
   let jobDbCustomized = jobDb.where("status", "==", "ค้างจ่าย");
+  let jobDbCustomizedTotal = jobDb.where("status", "==", "จ่ายแล้ว");
 
   if (options.customerId) {
     const reference = await reqCustomer(options.customerId);
     jobDbCustomized = jobDbCustomized.where("customer", "==", reference);
+
+    const referenceTotal = await reqCustomer(options.customerId);
+    jobDbCustomizedTotal = jobDbCustomizedTotal.where(
+      "customer",
+      "==",
+      referenceTotal
+    );
   }
 
-  jobDbCustomized.onSnapshot(async (querySnapshot: any) => {
-    let owePrice = 0;
+  let totalPrice = 0;
+  let owePrice = 0;
+  let oweCount = 0;
 
+  jobDbCustomizedTotal.onSnapshot(async (querySnapshot: any) => {
     querySnapshot.docs.forEach(async (doc: any) => {
       const { total } = doc.data();
-      owePrice += total;
+      totalPrice += total;
     });
 
-    observer.next({
-      owe: querySnapshot.size,
-      owePrice,
+    jobDbCustomized.onSnapshot(async (querySnapshot: any) => {
+      oweCount = querySnapshot.size;
+
+      querySnapshot.docs.forEach(async (doc: any) => {
+        const { total } = doc.data();
+        owePrice += total;
+      });
+
+      observer.next({
+        owe: oweCount,
+        owePrice,
+        totalPrice,
+      });
     });
   });
 };

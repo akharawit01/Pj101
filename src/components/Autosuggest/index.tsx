@@ -1,9 +1,15 @@
 import React from "react";
 import Autosuggest from "react-autosuggest";
 import styled from "styled-components";
+import FormControl from "@material-ui/core/FormControl";
+import FormHelperText from "@material-ui/core/FormHelperText";
 import { reqCustomers } from "services/customer";
 
-const Wrapper = styled.div`
+type WrapperProps = {
+  error: boolean;
+};
+
+const Wrapper = styled.div<WrapperProps>`
   .react-autosuggest__container {
     position: relative;
   }
@@ -15,7 +21,7 @@ const Wrapper = styled.div`
     font-size: 1rem;
     font-weight: 400;
     line-height: 1;
-    border: 1px solid #aaa;
+    border: 1px solid ${(props) => (props.error ? "red" : "#aaa")};
     border-radius: 4px;
   }
 
@@ -61,6 +67,12 @@ const Wrapper = styled.div`
     background-color: #ddd;
   }
 `;
+
+function myShowErrorFunction({
+  meta: { submitError, dirtySinceLastSubmit, error, touched },
+}: any): boolean {
+  return !!(((submitError && !dirtySinceLastSubmit) || error) && touched);
+}
 
 type Props = {} & typeof defaultProps;
 const defaultProps = {};
@@ -118,17 +130,23 @@ const CustomerAutosuggest = (props: any) => {
   };
 
   return (
-    <Wrapper>
-      <Autosuggest
-        suggestions={suggestions}
-        onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-        onSuggestionsClearRequested={onSuggestionsClearRequested}
-        getSuggestionValue={getSuggestionValue}
-        renderSuggestion={renderSuggestion}
-        onSuggestionSelected={onSuggestionSelected}
-        inputProps={inputProps}
-      />
-    </Wrapper>
+    <FormControl fullWidth>
+      <Wrapper error={myShowErrorFunction(props)}>
+        <Autosuggest
+          suggestions={suggestions}
+          onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+          onSuggestionsClearRequested={onSuggestionsClearRequested}
+          getSuggestionValue={getSuggestionValue}
+          renderSuggestion={renderSuggestion}
+          onSuggestionSelected={onSuggestionSelected}
+          inputProps={inputProps}
+        />
+      </Wrapper>
+
+      {myShowErrorFunction(props) && (
+        <FormHelperText error>กรุณากรอกชื่อผู้จ้าง</FormHelperText>
+      )}
+    </FormControl>
   );
 };
 CustomerAutosuggest.defaultProps = defaultProps;

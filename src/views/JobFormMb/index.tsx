@@ -2,11 +2,26 @@ import React from "react";
 import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import Box from "@material-ui/core/Box";
+import Fab from "@material-ui/core/Fab";
+import AddIcon from "@material-ui/icons/Add";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
+import { makeStyles, createStyles } from "@material-ui/core/styles";
 import JobForm from "../JobForm";
 
-const Jobs = (props: any) => {
+const useStyles = makeStyles((theme) =>
+  createStyles({
+    fab: {
+      position: "fixed",
+      bottom: theme.spacing(2),
+      right: theme.spacing(2),
+      zIndex: theme.zIndex.modal,
+    },
+  })
+);
+
+const JobFormMb = (props: any) => {
+  const classes = useStyles();
   const [open, setOpen] = React.useState<boolean>(false);
 
   const handleClickOpen = () => {
@@ -17,13 +32,16 @@ const Jobs = (props: any) => {
     setOpen(false);
   };
 
-  const { handleDelete, ...rest } = props;
-
   return (
     <>
-      <Button variant="contained" size="small" onClick={handleClickOpen}>
-        แก้ไข
-      </Button>
+      <Fab
+        color="primary"
+        aria-label="add"
+        onClick={handleClickOpen}
+        className={classes.fab}
+      >
+        <AddIcon />
+      </Fab>
       <Dialog
         open={open}
         onClose={handleClose}
@@ -35,28 +53,15 @@ const Jobs = (props: any) => {
             To subscribe to this website, please enter your email address here.
             We will send updates occasionally.
           </DialogContentText>
-          <JobForm {...rest} callBack={handleClose} />
+          <JobForm jobData={{}} callBack={handleClose} />
           <Box my={2}>
-            <Button
-              onClick={() => {
-                handleDelete().then(() => {
-                  handleClose();
-                });
-              }}
-              variant="contained"
-              color="secondary"
-              fullWidth
-              size="large"
-            >
-              ลบรายการ
+            <Button onClick={handleClose} color="primary" fullWidth>
+              ปิดหน้าต่าง
             </Button>
           </Box>
-          <Button onClick={handleClose} color="primary" size="large" fullWidth>
-            ปิดหน้าต่าง
-          </Button>
         </DialogContent>
       </Dialog>
     </>
   );
 };
-export default Jobs;
+export default JobFormMb;

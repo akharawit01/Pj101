@@ -2,20 +2,23 @@ import React from "react";
 import { Link } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import DeleteIcon from "@material-ui/icons/Delete";
-import Skeleton from "@material-ui/lab/Skeleton";
 import Typography from "@material-ui/core/Typography";
+import TableContainer from "@material-ui/core/TableContainer";
 import { useConfirm } from "material-ui-confirm";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import numeral from "numeral";
-import { formatDistance } from "date-fns";
 import { Table } from "components";
 import JobEdit from "../JobEdit";
-import { StatusChip, JobFilter } from "components";
+import { StatusChip, JobFilter, InfiniteScroll } from "components";
 import { reqJobs, reqDeleteJob } from "services/job";
 import { reqJobTypes } from "services/jobType";
 import Report from "../Report";
 import { find } from "lodash";
-import { th } from "date-fns/locale";
+import { formatPrice, formatDistanceDatae } from "utils/misc";
+
+type PagiType = {
+  total: number;
+  lastVisible?: any;
+};
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,17 +35,22 @@ const JobLists = (props: any) => {
   const classes = useStyles();
   const [jobTypes, setJobTypes] = React.useState<any[]>([]);
   const [filters, setFilters] = React.useState<object>({});
+  const [pagi, setPagi] = React.useState<PagiType>({ total: 0 });
 
   React.useEffect(() => {
     reqJobs(
       { customerId: props?.customerId, ...filters },
       {
         next: (querySnapshot: any) => {
-          setJobs(querySnapshot);
+          setJobs(querySnapshot.items);
+          setPagi(querySnapshot.pg);
           setFetching(false);
         },
       }
     );
+    return () => {
+      setJobs([]);
+    };
   }, [props, filters]);
 
   React.useEffect(() => {
@@ -50,6 +58,20 @@ const JobLists = (props: any) => {
       setJobTypes(resp);
     });
   }, []);
+
+  const loadMore = React.useCallback(() => {
+    !fetching &&
+      pagi.lastVisible &&
+      reqJobs(
+        { customerId: props?.customerId, last: pagi.lastVisible, ...filters },
+        {
+          next: (querySnapshot: any) => {
+            setJobs((jobs) => [...jobs, ...querySnapshot.items]);
+            setPagi(querySnapshot.pg);
+          },
+        }
+      );
+  }, [props, filters, pagi.lastVisible, fetching]);
 
   const handleClick = React.useCallback(
     (id: string) => {
@@ -63,6 +85,7 @@ const JobLists = (props: any) => {
     () => [
       {
         Header: "ลูกค้า",
+        id: "customerName",
         accessor: (props: any) => {
           const { customer } = props;
           return customerId ? (
@@ -74,6 +97,7 @@ const JobLists = (props: any) => {
       },
       {
         Header: "ประเภท",
+        id: "jobType",
         accessor: (props: any) => {
           return (jobTypes && find(jobTypes, { id: props?.type })?.name) || "-";
         },
@@ -81,23 +105,24 @@ const JobLists = (props: any) => {
       },
       {
         Header: "จำนวนเงิน (บาท)",
-        accessor: (props: any) => numeral(props.total).format("0,0.00"),
+        id: "total",
+        accessor: (props: any) => formatPrice(props.total),
         align: "right",
       },
       {
         Header: "เวลา",
+        id: "time",
         align: "right",
         accessor: (props: any) => {
           return (
             props.updatedAt?.toDate() &&
-            formatDistance(props.updatedAt?.toDate(), new Date(), {
-              locale: th,
-            })
+            formatDistanceDatae(props.updatedAt?.toDate())
           );
         },
       },
       {
         Header: "สถานะ",
+        id: "status",
         accessor: (props: any) => {
           return props.status ? (
             <StatusChip {...props} nextStatus="จ่ายแล้ว" />
@@ -108,6 +133,7 @@ const JobLists = (props: any) => {
       },
       {
         Header: "#",
+        id: "actions",
         align: "right",
         accessor: (props: any) => {
           return (
@@ -142,15 +168,15 @@ const JobLists = (props: any) => {
 
       <JobFilter setFilters={setFilters} />
 
-      <Table columns={columns} data={jobs} />
-      {fetching && (
-        <Skeleton variant="rect" width="100%">
-          <div style={{ paddingTop: "50%" }} />
-        </Skeleton>
-      )}
-      {/* {!fetching && !jobs.length && (
-        <Box textAlign="center" py={10}><Typography>ไม่มีข้อมูล</Typography></Box>
-      )} */}
+      <TableContainer>
+        <InfiniteScroll
+          items={jobs}
+          fetchData={loadMore}
+          hasMore={fetching || pagi.lastVisible}
+        >
+          <Table columns={columns} data={jobs} />
+        </InfiniteScroll>
+      </TableContainer>
     </>
   );
 };

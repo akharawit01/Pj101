@@ -9,27 +9,9 @@ import { Autosuggest, RadioLoading } from "components";
 import { reqHandleJob } from "services/job";
 import { reqJobTypes } from "services/jobType";
 import { find } from "lodash";
-import numeral from "numeral";
-
-const calculateAreaHour = (hour: any, price: number) => {
-  return {
-    hour,
-    price,
-    total: Number(hour) * price,
-  };
-};
-
-const calculateArea = (area: any, price: number) => {
-  const rai = Number(area?.rai) * price || 0;
-  const ngan = Number(area?.ngan) * (price / 4) || 0;
-  const wa = Number(area?.wa) * (price / 1600) || 0;
-
-  return {
-    area,
-    price,
-    total: rai + ngan + wa,
-  };
-};
+import { calculateAreaHour, calculateArea } from "utils/job";
+import { formatPrice } from "utils/misc";
+import { jobValidation } from "utils/validation";
 
 const JobForm = ({
   jobData,
@@ -67,6 +49,7 @@ const JobForm = ({
       ...values,
       ...area,
     };
+
     return reqHandleJob(newValues).then(() => {
       setTimeout(() => {
         form.reset({
@@ -82,6 +65,7 @@ const JobForm = ({
   return (
     <Form
       onSubmit={handlerJob}
+      validate={jobValidation}
       initialValues={{
         type: jobTypes[0]?.id,
         ...jobData,
@@ -126,7 +110,6 @@ const JobForm = ({
                     <Typography variant="h6" gutterBottom>
                       เวลา
                     </Typography>
-
                     <TextField
                       name="hour"
                       variant="outlined"
@@ -134,23 +117,24 @@ const JobForm = ({
                       margin="dense"
                       type="number"
                     />
-
-                    <Typography component="div">
-                      รวมเป็นเงิน:{" "}
-                      {numeral(
-                        calculateAreaHour(props.values?.hour, typePrice)?.total
-                      ).format("0,0.00")}
-                    </Typography>
+                    <Box mt={2}>
+                      <Typography component="div">
+                        รวมเป็นเงิน:{" "}
+                        {formatPrice(
+                          calculateAreaHour(props.values?.hour, typePrice)
+                            ?.total
+                        )}
+                      </Typography>
+                    </Box>
                   </Box>
                 );
               }
 
               return (
-                <>
+                <Box mb={2}>
                   <Typography variant="h6" gutterBottom>
                     พื้นที่
                   </Typography>
-
                   <TextField
                     name="area.rai"
                     variant="outlined"
@@ -158,7 +142,6 @@ const JobForm = ({
                     margin="dense"
                     type="number"
                   />
-
                   <TextField
                     name="area.ngan"
                     variant="outlined"
@@ -166,7 +149,6 @@ const JobForm = ({
                     margin="dense"
                     type="number"
                   />
-
                   <TextField
                     name="area.wa"
                     variant="outlined"
@@ -174,14 +156,15 @@ const JobForm = ({
                     margin="dense"
                     type="number"
                   />
-
-                  <Typography component="div">
-                    รวมเป็นเงิน:{" "}
-                    {numeral(
-                      calculateArea(props.values.area, typePrice)?.total
-                    ).format("0,0.00")}
-                  </Typography>
-                </>
+                  <Box mt={2}>
+                    <Typography component="div">
+                      รวมเป็นเงิน:{" "}
+                      {formatPrice(
+                        calculateArea(props.values.area, typePrice)?.total
+                      )}
+                    </Typography>
+                  </Box>
+                </Box>
               );
             }}
           </FormSpy>
