@@ -2,22 +2,47 @@ import camelcaseKeys from "camelcase-keys";
 import { db, timestamp } from "../firebase";
 import { reqCreateCustomer, reqCustomer } from "./customer";
 
-interface OptionTypes {
+export type Job = {
+  id: string;
+  customer: {
+    id: string;
+    name: string;
+    phone: string;
+    address: string;
+  };
+  status: string;
+  type: string;
+  total: number;
+  hour?: number;
+  price: number;
+  updatedAt: {
+    seconds: number;
+    nanoseconds: number;
+    toDate: () => string;
+  };
+  createdAt: {
+    seconds: number;
+    nanoseconds: number;
+    toDate: () => string;
+  };
+};
+type OptionTypes = {
   status?: string;
   customerId?: string;
   name?: string;
   limit?: number;
-  last?: any;
-}
+  last?: unknown;
+};
+
 const jobDb = db.collection("job");
 export const reqJobs = async (
   options: OptionTypes,
   observer: {
-    next: Function;
-    error?: Function;
+    next?: (querySnapshot: any) => void | undefined;
+    error?: (() => void) | undefined;
   }
-) => {
-  let jobDbCustomized = jobDb.orderBy("updated_at", "desc").limit(20);
+): Promise<unknown> => {
+  let jobDbCustomized = jobDb.orderBy("updated_at", "desc").limit(10);
 
   if (options.last) {
     jobDbCustomized = jobDbCustomized.startAfter(options.last);
@@ -34,12 +59,12 @@ export const reqJobs = async (
 
   return jobDbCustomized.onSnapshot(async (querySnapshot: any) => {
     const lastVisible =
-      querySnapshot.docs.length === 20
+      querySnapshot.docs.length === 10
         ? querySnapshot.docs[querySnapshot.docs.length - 1]
         : undefined;
 
     const allJobs = await Promise.all(
-      await querySnapshot.docs.map(async (doc: any, i: number) => {
+      await querySnapshot.docs.map(async (doc: any) => {
         const { customer, ...rest } = doc.data();
         let ctnObj = {};
         if (typeof customer === "object") {
@@ -61,17 +86,19 @@ export const reqJobs = async (
         };
       })
     );
-    observer.next({
-      items: allJobs,
-      pg: {
-        total: querySnapshot.size || 0,
-        lastVisible,
-      },
-    });
+
+    observer.next &&
+      observer.next({
+        items: allJobs,
+        pg: {
+          total: querySnapshot.size || 0,
+          lastVisible,
+        },
+      });
   });
 };
 
-export const reqHandleJob = async (values: any = {}) => {
+export const reqHandleJob = async (values: any = {}): Promise<void> => {
   const batch = db.batch();
   const { id, customer, ...rest } = values;
 
@@ -82,68 +109,65 @@ export const reqHandleJob = async (values: any = {}) => {
   } else {
     await reqCreateCustomer({
       name: customer,
-    }).then((resp) => {
+    }).then((resp: any) => {
       refCustomer = db.doc(`customer/${resp.id}`);
     });
   }
 
-  db.runTransaction(function (transaction) {
-    return transaction.get(refCustomer).then(function (ctmDoc) {
-      if (!ctmDoc.exists) {
-        throw new Error("Document does not exist!");
-      }
+  return db
+    .runTransaction(function (transaction) {
+      return transaction.get(refCustomer).then(function (ctmDoc) {
+        if (!ctmDoc.exists) {
+          throw new Error("Document does not exist!");
+        }
 
-      const b: any = ctmDoc.data();
+        const b: any = ctmDoc.data();
 
-      if (id) {
-        batch.update(jobDb.doc(id), {
-          ...rest,
-          customer: refCustomer || customer,
-          updated_at: timestamp,
-        });
+        if (id) {
+          batch.update(jobDb.doc(id), {
+            ...rest,
+            customer: refCustomer || customer,
+            updated_at: timestamp,
+          });
 
-        batch.update(refCustomer, {
-          balance: {
-            owe: Number(b?.balance?.total || 0) + rest.total,
-            total: Number(b?.balance?.total || 0) + rest.total,
-          },
-        });
-      } else {
-        batch.set(jobDb.doc(), {
-          ...rest,
-          customer: refCustomer || customer,
-          status: "ค้างจ่าย",
-          created_at: timestamp,
-          updated_at: timestamp,
-        });
+          batch.update(refCustomer, {
+            balance: {
+              owe: Number(b?.balance?.total || 0) + rest.total,
+              total: Number(b?.balance?.total || 0) + rest.total,
+            },
+          });
+        } else {
+          batch.set(jobDb.doc(), {
+            ...rest,
+            customer: refCustomer || customer,
+            status: "ค้างจ่าย",
+            created_at: timestamp,
+            updated_at: timestamp,
+          });
 
-        batch.update(refCustomer, {
-          balance: {
-            owe: Number(b?.balance?.total || 0) + rest.total,
-            total: Number(b?.balance?.total || 0) + rest.total,
-          },
-        });
-      }
+          batch.update(refCustomer, {
+            balance: {
+              owe: Number(b?.balance?.total || 0) + rest.total,
+              total: Number(b?.balance?.total || 0) + rest.total,
+            },
+          });
+        }
 
-      batch.commit();
-    });
-  })
-    .then(function (newPopulation) {
-      console.log("Population increased to ", newPopulation);
+        batch.commit();
+      });
     })
     .catch(function (err) {
-      // This will be an "population is too big" error.
       console.error(err);
     });
 };
 
-export const reqUpdateStatus = (id: string, status: string) => {
+export const reqUpdateStatus = (id: string, status: string): Promise<void> => {
   return jobDb.doc(id).update({
     status,
     updated_at: timestamp,
   });
 };
 
-export const reqDeleteJob = (id: string) => {
+export const reqDeleteJob = (id: string): Promise<void> => {
   return jobDb.doc(id).delete();
 };

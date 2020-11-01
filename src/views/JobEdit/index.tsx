@@ -5,8 +5,12 @@ import Box from "@material-ui/core/Box";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
 import JobForm from "../JobForm";
+import { Job } from "services/job";
 
-const Jobs = (props: any) => {
+const Jobs: React.FC<{
+  jobData: Job;
+  handleDelete: () => Promise<any>;
+}> = (props) => {
   const [open, setOpen] = React.useState<boolean>(false);
 
   const handleClickOpen = () => {

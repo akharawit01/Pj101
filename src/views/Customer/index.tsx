@@ -5,18 +5,18 @@ import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 import { useParams } from "react-router-dom";
 import CustomerForm from "../CustomerForm";
-import { reqCustomer } from "services/customer";
+import { Customer, reqCustomer } from "services/customer";
 import JobLists from "../JobLists";
 import { FullPageSpinner } from "components";
 import { isEmpty } from "lodash";
 
-const Customer = () => {
-  const [customer, setCustomer] = React.useState<object>({});
+const MzinCustomer: React.FC = () => {
+  const [customer, setCustomer] = React.useState<Customer>();
   const [fetchnig, setFetching] = React.useState(true);
-  let { id: customerId }: any = useParams();
+  const { id }: { id: string } = useParams();
 
   React.useEffect(() => {
-    reqCustomer(customerId)
+    reqCustomer(id)
       .get()
       .then((querySnapshot: any) => {
         if (querySnapshot.exists) {
@@ -29,7 +29,7 @@ const Customer = () => {
       .finally(() => {
         setFetching(false);
       });
-  }, [customerId]);
+  }, [id]);
 
   if (fetchnig) return <FullPageSpinner />;
 
@@ -47,10 +47,10 @@ const Customer = () => {
           <CustomerForm customerData={customer} />
         </Grid>
         <Grid item md={9} xs={12}>
-          <JobLists customerId={customerId} />
+          <JobLists customerId={id} />
         </Grid>
       </Grid>
     </Box>
   );
 };
-export default Customer;
+export default MzinCustomer;

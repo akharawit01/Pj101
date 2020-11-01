@@ -2,10 +2,16 @@ import { makeValidate } from "mui-rff";
 import * as Yup from "yup";
 
 type Job = {
-  customer?: string | object;
-  area?: object | undefined;
+  customer?: string;
+  area?:
+    | {
+        rai?: number;
+        ngan?: number;
+        wa?: number;
+      }
+    | undefined;
   type?: string | undefined;
-  hour?: any;
+  hour?: number | undefined;
 };
 
 const jobSchema: Yup.ObjectSchema<Job> = Yup.object()

@@ -1,11 +1,18 @@
-import React from "react";
+import React, { PropsWithChildren, ReactElement } from "react";
 import { withStyles, Theme, createStyles } from "@material-ui/core/styles";
-import Table from "@material-ui/core/Table";
+import MuiTable from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import { useTable, useFlexLayout } from "react-table";
+import {
+  useTable,
+  useFlexLayout,
+  TableOptions,
+  Cell,
+  Meta,
+  HeaderGroup,
+} from "react-table";
 
 const StyledTableCell = withStyles((theme: Theme) =>
   createStyles({
@@ -29,31 +36,38 @@ const StyledTableRow = withStyles((theme: Theme) =>
   })
 )(TableRow);
 
-const cellProps = (props: any, { cell }: { cell: any }) =>
-  getStyles(props, cell.column.align);
-const headerProps = (props: any, { column }: { column: any }) =>
-  getStyles(props, column.align);
-const getStyles = (props: any, align = "left") => [
+const getStyles = <T extends object>(props: any, align = "left") => [
   props,
   {
     style: {
       justifyContent: align === "right" ? "flex-end" : "flex-start",
       alignItems: "flex-start",
       display: "flex",
-      fontSize: "16px",
     },
   },
 ];
 
-const MainTable = ({
+const headerProps = <T extends object>(
+  props: any,
+  { column }: Meta<T, { column: HeaderGroup<T> }>
+) => getStyles(props);
+
+const cellProps = <T extends object>(
+  props: any,
+  { cell }: Meta<T, { cell: Cell<T> }>
+) => {
+  return getStyles(props);
+};
+
+export interface Table<T extends object = {}> extends TableOptions<T> {
+  data: T[];
+}
+
+const MainTable = <T extends object>({
   columns,
   data,
   ...rest
-}: {
-  columns: any[];
-  data: object[];
-  size?: any;
-}) => {
+}: PropsWithChildren<Table<T>>): ReactElement => {
   const tableInstance = useTable({ columns, data }, useFlexLayout);
 
   const {
@@ -66,7 +80,7 @@ const MainTable = ({
 
   return (
     // apply the table props
-    <Table {...getTableProps()} {...rest}>
+    <MuiTable {...getTableProps()} {...rest}>
       <TableHead>
         {
           // Loop over the header rows
@@ -118,7 +132,7 @@ const MainTable = ({
           })
         }
       </TableBody>
-    </Table>
+    </MuiTable>
   );
 };
 

@@ -5,15 +5,18 @@ import SaveIcon from "@material-ui/icons/Save";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
-import { reqCustomers } from "services/customer";
+import { reqCustomers, Customer } from "services/customer";
 import { reqUpdateCustomer } from "services/customer";
 
-const CustomerForm = ({ customerData }: { customerData: object }) => {
+const CustomerForm = ({ customerData }: { customerData?: Customer }) => {
   React.useEffect(() => {
     reqCustomers();
   }, []);
 
-  const handlerCustomer = (values: object, form: { reset: Function }) => {
+  const handlerCustomer = (
+    values: Partial<Customer>,
+    form: { reset: (data: Partial<Customer>) => void }
+  ) => {
     return reqUpdateCustomer(values).then(() => {
       setTimeout(() => {
         form.reset({

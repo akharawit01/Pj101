@@ -7,44 +7,54 @@ import Box from "@material-ui/core/Box";
 import Typography from "@material-ui/core/Typography";
 import { Autosuggest, RadioLoading } from "components";
 import { reqHandleJob } from "services/job";
-import { reqJobTypes } from "services/jobType";
+import { JobType, jobTypeDb, useJobType } from "services/jobType";
 import { find } from "lodash";
 import { calculateAreaHour, calculateArea } from "utils/job";
 import { formatPrice } from "utils/misc";
 import { jobValidation } from "utils/validation";
+import { Job } from "services/job";
 
-const JobForm = ({
-  jobData,
-  callBack,
-}: {
-  jobData: object;
-  callBack?: any;
-}) => {
-  const [jobTypes, setJobTypes] = React.useState<any[]>([]);
-  React.useEffect(() => {
-    reqJobTypes().then((resp) => {
-      setJobTypes(resp);
-    });
-  }, []);
+const JobForm: React.FC<{
+  jobData?: Job;
+  callBack?: () => void;
+}> = ({ jobData, callBack }) => {
+  const [jobTypes, setJobTypes] = React.useState<JobType[] | any>([]);
+
+  useJobType<JobType>(
+    () => jobTypeDb,
+    {
+      data: (resp) => {
+        setJobTypes(resp);
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    },
+    []
+  );
 
   const handlerJob = (
     values: {
-      area?: object;
+      area?:
+        | {
+            rai?: number;
+            ngan?: number;
+            wa?: number;
+          }
+        | undefined;
       type?: string;
-      hour?: any;
+      hour?: number | undefined;
     } = {},
-    form: { reset: Function }
+    form: { reset: (props: { type?: string }) => void }
   ) => {
     const jobType = find(jobTypes, { name: "ปรับที่" });
     const typePrice = find(jobTypes, { id: values?.type })?.price;
     let area;
-
     if (jobType?.id === values?.type) {
       area = calculateAreaHour(values.hour, typePrice);
     } else {
       area = calculateArea(values.area, typePrice);
     }
-
     const newValues = {
       ...values,
       ...area,
@@ -67,7 +77,7 @@ const JobForm = ({
       onSubmit={handlerJob}
       validate={jobValidation}
       initialValues={{
-        type: jobTypes[0]?.id,
+        type: jobTypes && jobTypes[0]?.id,
         ...jobData,
       }}
       render={({ handleSubmit, submitting, pristine }) => (
@@ -89,7 +99,7 @@ const JobForm = ({
               <Radios
                 name="type"
                 required={true}
-                data={jobTypes.map((type) => ({
+                data={jobTypes.map((type: JobType) => ({
                   label: type.name,
                   value: type.id,
                 }))}

@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) =>
   })
 );
 
-const JobFormMb = (props: any) => {
+const JobFormMb: React.FC = () => {
   const classes = useStyles();
   const [open, setOpen] = React.useState<boolean>(false);
 
@@ -53,7 +53,7 @@ const JobFormMb = (props: any) => {
             To subscribe to this website, please enter your email address here.
             We will send updates occasionally.
           </DialogContentText>
-          <JobForm jobData={{}} callBack={handleClose} />
+          <JobForm callBack={handleClose} />
           <Box my={2}>
             <Button onClick={handleClose} color="primary" fullWidth>
               ปิดหน้าต่าง

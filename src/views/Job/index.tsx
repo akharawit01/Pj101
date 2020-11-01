@@ -6,13 +6,13 @@ import JobForm from "../JobForm";
 import JobLists from "../JobLists";
 import JobFormMb from "../JobFormMb";
 
-const Job = () => {
+const Job: React.FC = () => {
   return (
     <Box my={3}>
       <Grid container spacing={3}>
         <Hidden smDown>
           <Grid item md={3} xs={12}>
-            <JobForm jobData={{}} />
+            <JobForm />
           </Grid>
         </Hidden>
 

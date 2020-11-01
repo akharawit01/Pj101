@@ -9,15 +9,23 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { Table } from "components";
 import JobEdit from "../JobEdit";
 import { StatusChip, JobFilter, InfiniteScroll } from "components";
-import { reqJobs, reqDeleteJob } from "services/job";
-import { reqJobTypes } from "services/jobType";
+import { reqJobs, reqDeleteJob, Job } from "services/job";
+import { jobTypeDb, useJobType, JobType } from "services/jobType";
 import Report from "../Report";
 import { find } from "lodash";
 import { formatPrice, formatDistanceDatae } from "utils/misc";
 
 type PagiType = {
   total: number;
-  lastVisible?: any;
+  lastVisible?: unknown;
+};
+type JobFilterProps = {
+  name?: string;
+  type?: string;
+  status?: string;
+};
+type JobListsProps = {
+  customerId?: string;
 };
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -28,20 +36,26 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const JobLists = (props: any) => {
-  const [jobs, setJobs] = React.useState<any[]>([]);
-  const [fetching, setFetching] = React.useState(true);
+const JobLists: React.FC<JobListsProps> = (props) => {
+  const [jobs, setJobs] = React.useState<Job[]>([]);
+  const [fetching, setFetching] = React.useState<boolean>(true);
   const confirm = useConfirm();
   const classes = useStyles();
-  const [jobTypes, setJobTypes] = React.useState<any[]>([]);
-  const [filters, setFilters] = React.useState<object>({});
+  const [jobTypes, setJobTypes] = React.useState<JobType[] | any>([]);
+  const [filters, setFilters] = React.useState<JobFilterProps>({});
   const [pagi, setPagi] = React.useState<PagiType>({ total: 0 });
 
   React.useEffect(() => {
     reqJobs(
       { customerId: props?.customerId, ...filters },
       {
-        next: (querySnapshot: any) => {
+        next: (querySnapshot: {
+          items: Job[];
+          pg: {
+            total: number;
+            pg: unknown;
+          };
+        }) => {
           setJobs(querySnapshot.items);
           setPagi(querySnapshot.pg);
           setFetching(false);
@@ -53,11 +67,18 @@ const JobLists = (props: any) => {
     };
   }, [props, filters]);
 
-  React.useEffect(() => {
-    reqJobTypes().then((resp) => {
-      setJobTypes(resp);
-    });
-  }, []);
+  useJobType<JobType>(
+    () => jobTypeDb,
+    {
+      data: (resp) => {
+        setJobTypes(resp);
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    },
+    []
+  );
 
   const loadMore = React.useCallback(() => {
     !fetching &&
@@ -86,7 +107,7 @@ const JobLists = (props: any) => {
       {
         Header: "ลูกค้า",
         id: "customerName",
-        accessor: (props: any) => {
+        accessor: (props: Job) => {
           const { customer } = props;
           return customerId ? (
             customer.name
@@ -98,7 +119,7 @@ const JobLists = (props: any) => {
       {
         Header: "ประเภท",
         id: "jobType",
-        accessor: (props: any) => {
+        accessor: (props: Job) => {
           return (jobTypes && find(jobTypes, { id: props?.type })?.name) || "-";
         },
         align: "center",
@@ -106,14 +127,14 @@ const JobLists = (props: any) => {
       {
         Header: "จำนวนเงิน (บาท)",
         id: "total",
-        accessor: (props: any) => formatPrice(props.total),
+        accessor: (props: Job) => formatPrice(props.total),
         align: "right",
       },
       {
         Header: "เวลา",
         id: "time",
         align: "right",
-        accessor: (props: any) => {
+        accessor: (props: Job) => {
           return (
             props.updatedAt?.toDate() &&
             formatDistanceDatae(props.updatedAt?.toDate())
@@ -123,7 +144,7 @@ const JobLists = (props: any) => {
       {
         Header: "สถานะ",
         id: "status",
-        accessor: (props: any) => {
+        accessor: (props: Job) => {
           return props.status ? (
             <StatusChip {...props} nextStatus="จ่ายแล้ว" />
           ) : (
@@ -135,7 +156,7 @@ const JobLists = (props: any) => {
         Header: "#",
         id: "actions",
         align: "right",
-        accessor: (props: any) => {
+        accessor: (props: Job) => {
           return (
             <>
               <JobEdit
@@ -172,9 +193,9 @@ const JobLists = (props: any) => {
         <InfiniteScroll
           items={jobs}
           fetchData={loadMore}
-          hasMore={fetching || pagi.lastVisible}
+          hasMore={fetching || !!pagi.lastVisible}
         >
-          <Table columns={columns} data={jobs} />
+          <Table<Job> columns={columns} data={jobs} />
         </InfiniteScroll>
       </TableContainer>
     </>
