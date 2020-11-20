@@ -1,8 +1,9 @@
 import camelcaseKeys from "camelcase-keys";
-import { db, timestamp } from "../firebase";
+import { db, auth, timestamp } from "../firebase";
 
 export type Customer = {
   id: string;
+  author: string;
   name?: string;
   balance?: {
     total: number;
@@ -39,8 +40,10 @@ export const reqCustomers = (searchText?: string): Promise<unknown> => {
 export const reqCreateCustomer = (
   values: Partial<Customer>
 ): Promise<unknown> => {
+  const uid = auth.currentUser?.uid;
   return customerDb.add({
     ...values,
+    author: uid,
     created_at: timestamp,
     updated_at: timestamp,
   });

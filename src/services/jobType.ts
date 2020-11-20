@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { flow } from "lodash";
 import { map, filter } from "lodash/fp";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
 import { dataFromSnapshot } from "utils/misc";
 import { DocumentData } from "@google-cloud/firestore";
 
 export type JobType = {
-  id: string;
+  id?: string;
+  author: string;
   name?: string;
   price?: number;
 };
@@ -42,5 +43,29 @@ export const useJobType = <T extends JobType>(
       handlers.unsubscribe && handlers.unsubscribe();
       unsubscribeFromDoc();
     };
-  }, deps);
+  }, deps); // eslint-disable-line
+};
+
+export const reqHandleJobType = async (values: {
+  jobTypes: JobType[];
+}): Promise<void> => {
+  const batch = db.batch();
+  const uid = auth.currentUser?.uid;
+
+  if (!values || !values?.jobTypes) throw new Error("jobTypes does not exist!");
+
+  await values.jobTypes.forEach((value) => {
+    if (value.id) {
+      batch.update(jobTypeDb.doc(value.id), {
+        ...value,
+      });
+    } else {
+      batch.set(jobTypeDb.doc(), {
+        ...value,
+        author: uid,
+      });
+    }
+  });
+
+  return batch.commit();
 };

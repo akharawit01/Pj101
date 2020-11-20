@@ -1,8 +1,9 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { Link, BrowserRouter, Switch, Route } from "react-router-dom";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Container from "@material-ui/core/Container";
 import AppBar from "@material-ui/core/AppBar";
+import MuiLink from "@material-ui/core/Link";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
@@ -12,6 +13,7 @@ import MenuIcon from "@material-ui/icons/Menu";
 import { useAuth } from "./contexts";
 import Job from "./views/Job";
 import Customer from "./views/Customer";
+import Setting from "./views/Setting";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,12 +29,12 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const AuthenticatedApp = () => {
+const AuthenticatedApp: React.FC = () => {
   const { signOut }: any = useAuth();
   const classes = useStyles();
 
   return (
-    <div>
+    <BrowserRouter>
       <AppBar position="static">
         <Toolbar>
           <IconButton
@@ -46,7 +48,15 @@ const AuthenticatedApp = () => {
           <Typography variant="h6" className={classes.title}>
             PJ-101
           </Typography>
-          <Button color="inherit" onClick={signOut}>
+          <MuiLink
+            color="inherit"
+            component={Link}
+            to="/setting"
+            style={{ marginRight: "15px" }}
+          >
+            ตั้งค่า
+          </MuiLink>
+          <Button variant="outlined" color="inherit" onClick={signOut}>
             ออกจากระบบ
           </Button>
         </Toolbar>
@@ -54,21 +64,20 @@ const AuthenticatedApp = () => {
       <Container maxWidth="xl">
         <AppRoutes />
       </Container>
-    </div>
+    </BrowserRouter>
   );
 };
 
 const AppRoutes = () => {
   return (
-    <Router>
-      <Switch>
-        <Route exact path="/" component={Job} />
-        <Route exact path="/report" component={() => <div>Report</div>} />
-        <Route exact path="/jobs" component={Job} />
-        <Route exact path="/customer/:id" component={Customer} />
-        <Route path="*" component={() => <div>No Data.</div>} />
-      </Switch>
-    </Router>
+    <Switch>
+      <Route exact path="/" component={Job} />
+      <Route exact path="/report" component={() => <div>Report</div>} />
+      <Route exact path="/jobs" component={Job} />
+      <Route exact path="/customer/:id" component={Customer} />
+      <Route exact path="/setting" component={Setting} />
+      <Route path="*" component={() => <div>No Data.</div>} />
+    </Switch>
   );
 };
 export default AuthenticatedApp;

@@ -1,7 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
-import Typography from "@material-ui/core/Typography";
+import Button from "@material-ui/core/Button";
+import ReplyIcon from "@material-ui/icons/Reply";
 import Box from "@material-ui/core/Box";
 import { useParams } from "react-router-dom";
 import CustomerForm from "../CustomerForm";
@@ -13,6 +14,7 @@ import { isEmpty } from "lodash";
 const MzinCustomer: React.FC = () => {
   const [customer, setCustomer] = React.useState<Customer>();
   const [fetchnig, setFetching] = React.useState(true);
+  const { push } = useHistory();
   const { id }: { id: string } = useParams();
 
   React.useEffect(() => {
@@ -40,9 +42,17 @@ const MzinCustomer: React.FC = () => {
       <Grid container spacing={3}>
         <Grid item md={3} xs={12}>
           <Box mb={2}>
-            <Link to="/">
-              <Typography>กลับไปหน้าหลัก</Typography>
-            </Link>
+            <Button
+              variant="outlined"
+              size="small"
+              color="primary"
+              startIcon={<ReplyIcon />}
+              onClick={() => {
+                push("/");
+              }}
+            >
+              กลับไปหน้าหลัก
+            </Button>
           </Box>
           <CustomerForm customerData={customer} />
         </Grid>

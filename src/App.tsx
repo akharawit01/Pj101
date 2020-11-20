@@ -14,7 +14,7 @@ const theme = createMuiTheme({
   },
 });
 
-function App() {
+const App: React.FC = () => {
   const { user }: any = useAuth();
   return (
     <ThemeProvider theme={theme}>
@@ -24,6 +24,6 @@ function App() {
       </React.Suspense>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

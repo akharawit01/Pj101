@@ -10,7 +10,7 @@ type ReportKeys = {
   totalPrice?: number;
 };
 
-const Jobs = (props: any) => {
+const Jobs: React.FC<any> = (props) => {
   const [fetching, setFetching] = React.useState(true);
   const [data, setData] = React.useState<ReportKeys>(null!);
 

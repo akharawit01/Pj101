@@ -10,7 +10,7 @@ interface Props {
 const AuthContext = React.createContext<object | undefined>(undefined);
 AuthContext.displayName = "AuthContext";
 
-function AuthProvider(props: Props) {
+const AuthProvider: React.FC<Props> = (props) => {
   const [verifying, setVerifying] = React.useState<boolean>(true);
   const [user, setUser] = React.useState<User | {}>({});
 
@@ -64,7 +64,7 @@ function AuthProvider(props: Props) {
   if (verifying) return <FullPageSpinner />;
 
   return <AuthContext.Provider value={value} {...props} />;
-}
+};
 
 function useAuth() {
   const context = React.useContext(AuthContext);

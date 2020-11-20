@@ -4,6 +4,7 @@ import { TextField, Radios } from "mui-rff";
 import SaveIcon from "@material-ui/icons/Save";
 import Button from "@material-ui/core/Button";
 import Box from "@material-ui/core/Box";
+import Alert from "@material-ui/lab/Alert";
 import Typography from "@material-ui/core/Typography";
 import { Autosuggest, RadioLoading } from "components";
 import { reqHandleJob } from "services/job";
@@ -18,7 +19,7 @@ const JobForm: React.FC<{
   jobData?: Job;
   callBack?: () => void;
 }> = ({ jobData, callBack }) => {
-  const [jobTypes, setJobTypes] = React.useState<JobType[] | any>([]);
+  const [jobTypes, setJobTypes] = React.useState<JobType[] | any>(null);
 
   useJobType<JobType>(
     () => jobTypeDb,
@@ -93,9 +94,9 @@ const JobForm: React.FC<{
             <Typography variant="h6" gutterBottom>
               ประเภท
             </Typography>
-            {jobTypes && !jobTypes.length ? (
+            {jobTypes === null ? (
               <RadioLoading />
-            ) : (
+            ) : jobTypes && jobTypes.length ? (
               <Radios
                 name="type"
                 required={true}
@@ -104,6 +105,10 @@ const JobForm: React.FC<{
                   value: type.id,
                 }))}
               />
+            ) : (
+              <Alert variant="outlined" severity="warning">
+                กรุณาเพิ่มประเภทงานที่ปุ่ม "ตั้งค่า"
+              </Alert>
             )}
           </Box>
 
@@ -113,7 +118,6 @@ const JobForm: React.FC<{
               const typePrice = find(jobTypes, { id: props.values?.type })
                 ?.price;
 
-              if (!jobType) return null;
               if (jobType?.id === props.values?.type) {
                 return (
                   <Box mb={2}>

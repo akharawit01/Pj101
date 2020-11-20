@@ -107,6 +107,7 @@ const JobLists: React.FC<JobListsProps> = (props) => {
       {
         Header: "ลูกค้า",
         id: "customerName",
+        isVisible: false,
         accessor: (props: Job) => {
           const { customer } = props;
           return customerId ? (

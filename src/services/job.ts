@@ -1,9 +1,10 @@
 import camelcaseKeys from "camelcase-keys";
-import { db, timestamp } from "../firebase";
+import { db, auth, timestamp } from "../firebase";
 import { reqCreateCustomer, reqCustomer } from "./customer";
 
 export type Job = {
   id: string;
+  author: string;
   customer: {
     id: string;
     name: string;
@@ -69,13 +70,15 @@ export const reqJobs = async (
         let ctnObj = {};
         if (typeof customer === "object") {
           await customer.get().then((customerSnap: any) => {
-            const { name, phone, address } = customerSnap.data();
-            ctnObj = {
-              id: customerSnap.id,
-              name,
-              phone,
-              address,
-            };
+            if (customerSnap.data()) {
+              const { name, phone, address } = customerSnap.data();
+              ctnObj = {
+                id: customerSnap.id,
+                name,
+                phone,
+                address,
+              };
+            }
           });
         }
 
@@ -100,6 +103,7 @@ export const reqJobs = async (
 
 export const reqHandleJob = async (values: any = {}): Promise<void> => {
   const batch = db.batch();
+  const uid = auth.currentUser?.uid;
   const { id, customer, ...rest } = values;
 
   let refCustomer: any = null!;
@@ -109,6 +113,7 @@ export const reqHandleJob = async (values: any = {}): Promise<void> => {
   } else {
     await reqCreateCustomer({
       name: customer,
+      author: uid,
     }).then((resp: any) => {
       refCustomer = db.doc(`customer/${resp.id}`);
     });
@@ -126,31 +131,35 @@ export const reqHandleJob = async (values: any = {}): Promise<void> => {
         if (id) {
           batch.update(jobDb.doc(id), {
             ...rest,
+            author: uid,
             customer: refCustomer || customer,
             updated_at: timestamp,
           });
 
-          batch.update(refCustomer, {
-            balance: {
-              owe: Number(b?.balance?.total || 0) + rest.total,
-              total: Number(b?.balance?.total || 0) + rest.total,
-            },
-          });
+          // batch.update(refCustomer, {
+          //   balance: {
+          //     owe: Number(b?.balance?.total || 0) + rest.total,
+          //     total: Number(b?.balance?.total || 0) + rest.total,
+          //   },
+          // });
         } else {
           batch.set(jobDb.doc(), {
             ...rest,
             customer: refCustomer || customer,
             status: "ค้างจ่าย",
+            author: uid,
             created_at: timestamp,
             updated_at: timestamp,
           });
 
-          batch.update(refCustomer, {
-            balance: {
-              owe: Number(b?.balance?.total || 0) + rest.total,
-              total: Number(b?.balance?.total || 0) + rest.total,
-            },
-          });
+          // batch.update(refCustomer, {
+          //   balance: {
+          //     owe: Number(b?.balance?.total || 0) + rest.total,
+          //     total: Number(b?.balance?.total || 0) + rest.total,
+          //   },
+          // });
+
+          console.log(b);
         }
 
         batch.commit();

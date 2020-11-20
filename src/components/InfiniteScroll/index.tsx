@@ -10,12 +10,12 @@ type InfiniteScrollProps = {
   hasMore: boolean;
 };
 
-const InfiniteScroll = ({
+const InfiniteScroll: React.FC<InfiniteScrollProps> = ({
   items,
   fetchData,
   children,
   hasMore,
-}: InfiniteScrollProps) => {
+}) => {
   return (
     <InfiniteScrollComponent
       dataLength={items.length}

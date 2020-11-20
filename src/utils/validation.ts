@@ -20,4 +20,16 @@ const jobSchema: Yup.ObjectSchema<Job> = Yup.object()
   })
   .defined();
 
+const jobTypeSchema: Yup.ObjectSchema<any> = Yup.object()
+  .shape({
+    jobTypes: Yup.array().of(
+      Yup.object().shape({
+        name: Yup.string().required(),
+        price: Yup.number().min(100).max(5000).required(),
+      })
+    ),
+  })
+  .defined();
+
 export const jobValidation = makeValidate(jobSchema);
+export const jobTypeValidation = makeValidate(jobTypeSchema);
