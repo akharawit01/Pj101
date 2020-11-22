@@ -1,6 +1,7 @@
 import React from "react";
 import Box from "@material-ui/core/Box";
 import Container from "@material-ui/core/Container";
+import Grid from "@material-ui/core/Grid";
 import ReplyIcon from "@material-ui/icons/Reply";
 import Typography, { TypographyProps } from "@material-ui/core/Typography";
 import MuiLink from "@material-ui/core/Link";
@@ -112,45 +113,66 @@ const Setting: React.FC = () => {
           }}
           render={({ handleSubmit, pristine, invalid }) => (
             <form onSubmit={handleSubmit}>
-              <FieldArray name="jobTypes">
-                {({ fields }) => (
-                  <Box mb={2}>
-                    {fields.map((name) => (
-                      <Box display="flex" py={2} key={name}>
-                        <Box flexGrow={1}>
-                          <TextField
-                            name={`${name}.name`}
-                            label="ชื่อประเภทงาน"
-                            variant="outlined"
-                          />
+              <Grid container spacing={3}>
+                <FieldArray name="jobTypes">
+                  {({ fields }) => (
+                    <>
+                      {fields.map((name, i) => (
+                        <React.Fragment key={name}>
+                          <Grid item xs={12}>
+                            <Box
+                              borderBottom={1}
+                              color="white"
+                              bgcolor="palevioletred"
+                              p={1}
+                              fontFamily="h6.fontFamily"
+                              fontSize={{
+                                xs: "h6.fontSize",
+                              }}
+                            >
+                              #{`${i + 1}`}
+                            </Box>
+                          </Grid>
+                          <Grid item md={6} xs={12}>
+                            <TextField
+                              name={`${name}.name`}
+                              label="ชื่อประเภทงาน"
+                              variant="outlined"
+                            />
+                          </Grid>
+                          <Grid item md={4} xs={6}>
+                            <TextField
+                              name={`${name}.price`}
+                              label="ราคา"
+                              type="number"
+                              variant="outlined"
+                            />
+                          </Grid>
+                          <Grid item md={2} xs={6}>
+                            <Checkboxes
+                              name={`${name}.perHour`}
+                              data={{ label: "/ชม.", value: true }}
+                            />
+                          </Grid>
+                        </React.Fragment>
+                      ))}
+                      <Grid item xs={12}>
+                        <Box my={3}>
+                          <MuiLink
+                            href="#"
+                            onClick={() =>
+                              !fetching && fields.push({ name: "", price: "" })
+                            }
+                          >
+                            เพิ่มรายการ
+                          </MuiLink>
                         </Box>
-                        <Box pl={3} width="200px">
-                          <TextField
-                            name={`${name}.price`}
-                            label="ราคา"
-                            type="number"
-                            variant="outlined"
-                          />
-                        </Box>
-                        <Box pl={3} width="150px">
-                          <Checkboxes
-                            name={`${name}.perHour`}
-                            data={{ label: "/ชม.", value: true }}
-                          />
-                        </Box>
-                      </Box>
-                    ))}
-                    <MuiLink
-                      href="#"
-                      onClick={() =>
-                        !fetching && fields.push({ name: "", price: "" })
-                      }
-                    >
-                      เพิ่มรายการ
-                    </MuiLink>
-                  </Box>
-                )}
-              </FieldArray>
+                      </Grid>
+                    </>
+                  )}
+                </FieldArray>
+              </Grid>
+
               <Button
                 type="submit"
                 variant="contained"
