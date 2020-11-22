@@ -27,13 +27,18 @@ export const reqCustomers = (searchText?: string): Promise<unknown> => {
     .orderBy("name")
     .startAt(searchText || "")
     .endAt(searchText + "\uf8ff")
-    .limit(3)
+    .limit(5)
+    .where("author", "==", auth?.currentUser?.uid)
     .get()
     .then((querySnapshot) => {
       return querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...camelcaseKeys(doc.data()),
       }));
+    })
+    .catch((err) => {
+      console.error(err);
+      return err;
     });
 };
 

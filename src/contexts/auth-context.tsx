@@ -1,6 +1,12 @@
 import React from "react";
 import { User } from "../types/user";
-import { reqSignInWithGoogle, reqSignOut, auth } from "services/auth";
+import {
+  reqSignInWithGoogle,
+  reqSignInWithEmail,
+  reqSignOut,
+  auth,
+} from "services/auth";
+import { useConfirm } from "material-ui-confirm";
 import { FullPageSpinner } from "components";
 
 interface Props {
@@ -11,6 +17,7 @@ const AuthContext = React.createContext<object | undefined>(undefined);
 AuthContext.displayName = "AuthContext";
 
 const AuthProvider: React.FC<Props> = (props) => {
+  const confirm = useConfirm();
   const [verifying, setVerifying] = React.useState<boolean>(true);
   const [user, setUser] = React.useState<User | {}>({});
 
@@ -31,6 +38,25 @@ const AuthProvider: React.FC<Props> = (props) => {
     };
   }, []);
 
+  const signInWithEmail = React.useCallback(
+    (values: { email: string; password: string }) => {
+      const { email, password } = values;
+      return reqSignInWithEmail(email, password)
+        .then((result: any) => {
+          setUser({
+            uid: result.user.uid,
+            displayName: result.user.displayName,
+            email: result.user.email,
+            photoURL: result.user.photoURL,
+          });
+        })
+        .finally(() => {
+          setVerifying(false);
+        });
+    },
+    []
+  );
+
   const signInWithGoogle = React.useCallback(() => {
     setVerifying(true);
     return reqSignInWithGoogle()
@@ -49,17 +75,18 @@ const AuthProvider: React.FC<Props> = (props) => {
 
   const signOut = React.useCallback(
     () =>
-      reqSignOut().then(() => {
-        setUser({});
-      }),
-    []
+      confirm().then(() =>
+        reqSignOut().then(() => {
+          setUser({});
+        })
+      ),
+    [confirm]
   );
 
-  const value = React.useMemo(() => ({ user, signInWithGoogle, signOut }), [
-    signInWithGoogle,
-    signOut,
-    user,
-  ]);
+  const value = React.useMemo(
+    () => ({ user, signInWithEmail, signInWithGoogle, signOut }),
+    [signInWithEmail, signInWithGoogle, signOut, user]
+  );
 
   if (verifying) return <FullPageSpinner />;
 

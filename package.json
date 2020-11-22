@@ -29,6 +29,7 @@
     "firebase": "^7.21.0",
     "material-ui-confirm": "^2.1.1",
     "mui-rff": "^2.5.5",
+    "notistack": "^1.0.1",
     "numeral": "^2.0.6",
     "react": "^16.13.1",
     "react-autosuggest": "^10.0.2",

@@ -1,4 +1,4 @@
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
 import { reqCustomer } from "./customer";
 
 type OptionTypes = {
@@ -17,8 +17,12 @@ export const reqJobReport = async (
   let owePrice = 0;
   let oweCount = 0;
 
-  let jobDbCustomized = jobDb.where("status", "==", "ค้างจ่าย");
-  let jobDbCustomizedTotal = jobDb.where("status", "==", "จ่ายแล้ว");
+  let jobDbCustomized = jobDb
+    .where("status", "==", "ค้างจ่าย")
+    .where("author", "==", auth?.currentUser?.uid);
+  let jobDbCustomizedTotal = jobDb
+    .where("status", "==", "จ่ายแล้ว")
+    .where("author", "==", auth?.currentUser?.uid);
 
   if (options.customerId) {
     const reference = await reqCustomer(options.customerId);
@@ -39,18 +43,23 @@ export const reqJobReport = async (
     });
   });
 
-  jobDbCustomized.get().then(async (querySnapshot: any) => {
-    oweCount = querySnapshot.size;
+  jobDbCustomized
+    .get()
+    .then(async (querySnapshot: any) => {
+      oweCount = querySnapshot.size;
 
-    await querySnapshot.docs.forEach(async (doc: any) => {
-      const { total } = doc.data();
-      owePrice += total;
-    });
+      await querySnapshot.docs.forEach(async (doc: any) => {
+        const { total } = doc.data();
+        owePrice += total;
+      });
 
-    observer.next({
-      owe: oweCount,
-      owePrice,
-      totalPrice,
+      observer.next({
+        owe: oweCount,
+        owePrice,
+        totalPrice,
+      });
+    })
+    .catch((err) => {
+      observer.error && observer.error(err);
     });
-  });
 };

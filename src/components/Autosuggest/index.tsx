@@ -74,8 +74,6 @@ function myShowErrorFunction({
   return !!(((submitError && !dirtySinceLastSubmit) || error) && touched);
 }
 
-type Props = {} & typeof defaultProps;
-const defaultProps = {};
 type Customer = {
   id: string;
   name: string;
@@ -98,9 +96,10 @@ const CustomerAutosuggest = (props: any) => {
   React.useEffect(() => {
     if (typeof input === "object" && input.value && input.value.name) {
       setValue(input.value.name);
+    } else {
+      setValue(input.value);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [input.value]);
 
   const onChange = (event: object, { newValue }: { newValue: string }) => {
     input.onChange(event);
@@ -149,6 +148,5 @@ const CustomerAutosuggest = (props: any) => {
     </FormControl>
   );
 };
-CustomerAutosuggest.defaultProps = defaultProps;
 
 export default CustomerAutosuggest;

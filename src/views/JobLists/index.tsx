@@ -60,6 +60,9 @@ const JobLists: React.FC<JobListsProps> = (props) => {
           setPagi(querySnapshot.pg);
           setFetching(false);
         },
+        error: () => {
+          setFetching(false);
+        },
       }
     );
     return () => {
@@ -74,7 +77,7 @@ const JobLists: React.FC<JobListsProps> = (props) => {
         setJobTypes(resp);
       },
       error: (error) => {
-        console.log(error);
+        console.error(error);
       },
     },
     []
@@ -188,7 +191,7 @@ const JobLists: React.FC<JobListsProps> = (props) => {
 
       <Report customerId={customerId} />
 
-      <JobFilter setFilters={setFilters} />
+      <JobFilter setFilters={setFilters} haveSearchName={!customerId} />
 
       <TableContainer>
         <InfiniteScroll
@@ -196,7 +199,16 @@ const JobLists: React.FC<JobListsProps> = (props) => {
           fetchData={loadMore}
           hasMore={fetching || !!pagi.lastVisible}
         >
-          <Table<Job> columns={columns} data={jobs} />
+          <Table<Job>
+            columns={
+              customerId
+                ? columns.filter(
+                    (column) => customerId && column?.id !== "customerName"
+                  )
+                : columns
+            }
+            data={jobs}
+          />
         </InfiniteScroll>
       </TableContainer>
     </>

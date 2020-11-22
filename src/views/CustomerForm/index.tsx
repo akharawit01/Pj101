@@ -1,5 +1,6 @@
 import React from "react";
 import { Form } from "react-final-form";
+import { useSnackbar } from "notistack";
 import { TextField } from "mui-rff";
 import SaveIcon from "@material-ui/icons/Save";
 import Box from "@material-ui/core/Box";
@@ -9,6 +10,7 @@ import { reqCustomers, Customer } from "services/customer";
 import { reqUpdateCustomer } from "services/customer";
 
 const CustomerForm = ({ customerData }: { customerData?: Customer }) => {
+  const { enqueueSnackbar } = useSnackbar();
   React.useEffect(() => {
     reqCustomers();
   }, []);
@@ -17,13 +19,22 @@ const CustomerForm = ({ customerData }: { customerData?: Customer }) => {
     values: Partial<Customer>,
     form: { reset: (data: Partial<Customer>) => void }
   ) => {
-    return reqUpdateCustomer(values).then(() => {
-      setTimeout(() => {
-        form.reset({
-          ...values,
+    return reqUpdateCustomer(values)
+      .then(() => {
+        setTimeout(() => {
+          enqueueSnackbar("บันทึกรายการเรียบร้อยแล้ว!", {
+            variant: "success",
+          });
+          form.reset({
+            ...values,
+          });
+        }, 100);
+      })
+      .catch(() => {
+        enqueueSnackbar("บันทึกข้อมูลผิดพลาด!", {
+          variant: "error",
         });
-      }, 100);
-    });
+      });
   };
 
   return (

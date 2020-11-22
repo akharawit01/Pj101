@@ -22,6 +22,9 @@ const Jobs: React.FC<any> = (props) => {
           setData(querySnapshot);
           setFetching(false);
         },
+        error: () => {
+          setFetching(false);
+        },
       }
     );
   }, [props]);
@@ -29,7 +32,7 @@ const Jobs: React.FC<any> = (props) => {
   return (
     <Grid container spacing={2}>
       <Grid item md={4} sm={6} xs={12}>
-        <Card label="จำนวนค้างจ่าย" value={data?.owe} loading={fetching} />
+        <Card label="จำนวนค้างจ่าย" value={data?.owe || 0} loading={fetching} />
       </Grid>
       <Grid item md={4} sm={6} xs={12}>
         <Card

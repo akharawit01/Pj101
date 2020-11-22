@@ -10,6 +10,7 @@ export type JobType = {
   author: string;
   name?: string;
   price?: number;
+  perHour?: boolean;
 };
 interface FirebaseHookHandlers {
   subscribe?: () => void;
@@ -28,20 +29,22 @@ export const useJobType = <T extends JobType>(
 ): void => {
   useEffect(() => {
     handlers.subscribe && handlers.subscribe();
-    const unsubscribeFromDoc = query().onSnapshot(
-      (snapshot: any) => {
-        const docs = flow(
-          () => snapshot.docs,
-          map(dataFromSnapshot),
-          filter<T>((d) => !!d)
-        )();
-        handlers.data(docs);
-      },
-      (error: Error) => handlers.error && handlers.error(error)
-    );
+    query()
+      .where("author", "==", auth?.currentUser?.uid)
+      .get()
+      .then(
+        (snapshot: any) => {
+          const docs = flow(
+            () => snapshot.docs,
+            map(dataFromSnapshot),
+            filter<T>((d) => !!d)
+          )();
+          handlers.data(docs);
+        },
+        (error: Error) => handlers.error && handlers.error(error)
+      );
     return () => {
       handlers.unsubscribe && handlers.unsubscribe();
-      unsubscribeFromDoc();
     };
   }, deps); // eslint-disable-line
 };

@@ -6,9 +6,11 @@ import SearchIcon from "@material-ui/icons/Search";
 import CancelIcon from "@material-ui/icons/Cancel";
 import MenuItem from "@material-ui/core/MenuItem";
 import Button from "@material-ui/core/Button";
+import { Autosuggest } from "components";
+import { JobType, jobTypeDb, useJobType } from "services/jobType";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import { Form } from "react-final-form";
-import { TextField, Select } from "mui-rff";
+import { Form, Field } from "react-final-form";
+import { Select } from "mui-rff";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -18,8 +20,21 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const JobFilter = ({ setFilters }: any) => {
+const JobFilter: React.FC<any> = ({ setFilters, haveSearchName }) => {
+  const [jobTypes, setJobTypes] = React.useState<JobType[] | any>(null);
   const classes = useStyles();
+
+  useJobType<JobType>(
+    () => jobTypeDb,
+    {
+      data: (resp) => {
+        setJobTypes(resp);
+      },
+      error: () => {},
+    },
+    []
+  );
+
   const onSubmit = (values: any) => {
     setFilters(values);
   };
@@ -38,15 +53,11 @@ const JobFilter = ({ setFilters }: any) => {
               <Typography>ค้นหา</Typography>
             </Box>
             <Grid spacing={2} container direction="row" alignItems="center">
-              <Grid item xs={12} sm={6} md={3} lg={3}>
-                <TextField
-                  name="name"
-                  variant="outlined"
-                  label="ชื่อผู้จ้าง"
-                  margin="dense"
-                  type="text"
-                />
-              </Grid>
+              {haveSearchName && (
+                <Grid item xs={12} sm={6} md={3} lg={3}>
+                  <Field name="customer" component={Autosuggest} />
+                </Grid>
+              )}
               <Grid item xs={12} sm={6} md={3} lg={3}>
                 <Select
                   name="type"
@@ -58,9 +69,12 @@ const JobFilter = ({ setFilters }: any) => {
                   }}
                 >
                   <MenuItem value="ทั้งหมด">ทั้งหมด</MenuItem>
-                  <MenuItem value="ปรับที่">ปรับที่</MenuItem>
-                  <MenuItem value="พรวนดิน">พรวนดิน</MenuItem>
-                  <MenuItem value="ไถ">ไถ</MenuItem>
+                  {jobTypes &&
+                    jobTypes.map((type: JobType) => (
+                      <MenuItem key={type.id} value={type.id}>
+                        {type.name}
+                      </MenuItem>
+                    ))}
                 </Select>
               </Grid>
               <Grid item xs={12} sm={6} md={2} lg={3}>

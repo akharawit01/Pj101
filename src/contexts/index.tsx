@@ -1,5 +1,6 @@
 import React from "react";
 import { ConfirmProvider } from "material-ui-confirm";
+import { SnackbarProvider } from "notistack";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AuthProvider, useAuth } from "./auth-context";
 
@@ -12,9 +13,17 @@ const AppProviders: React.FC<React.PropsWithChildren<any>> = ({ children }) => {
         cancellationText: "ยกเลิก",
       }}
     >
-      <Router>
-        <AuthProvider>{children}</AuthProvider>
-      </Router>
+      <SnackbarProvider
+        maxSnack={3}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Router>
+          <AuthProvider>{children}</AuthProvider>
+        </Router>
+      </SnackbarProvider>
     </ConfirmProvider>
   );
 };

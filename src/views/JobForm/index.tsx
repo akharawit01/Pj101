@@ -1,5 +1,6 @@
 import React from "react";
 import { Form, Field, FormSpy } from "react-final-form";
+import { useSnackbar } from "notistack";
 import { TextField, Radios } from "mui-rff";
 import SaveIcon from "@material-ui/icons/Save";
 import Button from "@material-ui/core/Button";
@@ -20,6 +21,7 @@ const JobForm: React.FC<{
   callBack?: () => void;
 }> = ({ jobData, callBack }) => {
   const [jobTypes, setJobTypes] = React.useState<JobType[] | any>(null);
+  const { enqueueSnackbar } = useSnackbar();
 
   useJobType<JobType>(
     () => jobTypeDb,
@@ -27,8 +29,8 @@ const JobForm: React.FC<{
       data: (resp) => {
         setJobTypes(resp);
       },
-      error: (error) => {
-        console.log(error);
+      error: () => {
+        setJobTypes([]);
       },
     },
     []
@@ -46,7 +48,7 @@ const JobForm: React.FC<{
       type?: string;
       hour?: number | undefined;
     } = {},
-    form: { reset: (props: { type?: string }) => void }
+    form: any
   ) => {
     const jobType = find(jobTypes, { name: "ปรับที่" });
     const typePrice = find(jobTypes, { id: values?.type })?.price;
@@ -61,16 +63,24 @@ const JobForm: React.FC<{
       ...area,
     };
 
-    return reqHandleJob(newValues).then(() => {
-      setTimeout(() => {
-        form.reset({
-          type: values.type,
+    return reqHandleJob(newValues)
+      .then(() => {
+        setTimeout(() => {
+          enqueueSnackbar("บันทึกรายการเรียบร้อยแล้ว!", {
+            variant: "success",
+          });
+          form.restart();
+        }, 100);
+
+        if (callBack) {
+          callBack();
+        }
+      })
+      .catch(() => {
+        enqueueSnackbar("บันทึกข้อมูลผิดพลาด!", {
+          variant: "error",
         });
-      }, 100);
-      if (callBack) {
-        callBack();
-      }
-    });
+      });
   };
 
   return (
@@ -114,11 +124,9 @@ const JobForm: React.FC<{
 
           <FormSpy subscription={{ values: true }}>
             {(props: any) => {
-              const jobType = find(jobTypes, { name: "ปรับที่" });
-              const typePrice = find(jobTypes, { id: props.values?.type })
-                ?.price;
+              const type = find(jobTypes, { id: props.values?.type });
 
-              if (jobType?.id === props.values?.type) {
+              if (type?.perHour) {
                 return (
                   <Box mb={2}>
                     <Typography variant="h6" gutterBottom>
@@ -135,7 +143,7 @@ const JobForm: React.FC<{
                       <Typography component="div">
                         รวมเป็นเงิน:{" "}
                         {formatPrice(
-                          calculateAreaHour(props.values?.hour, typePrice)
+                          calculateAreaHour(props.values?.hour, type.price)
                             ?.total
                         )}
                       </Typography>
@@ -174,7 +182,7 @@ const JobForm: React.FC<{
                     <Typography component="div">
                       รวมเป็นเงิน:{" "}
                       {formatPrice(
-                        calculateArea(props.values.area, typePrice)?.total
+                        calculateArea(props.values.area, type?.price)?.total
                       )}
                     </Typography>
                   </Box>
