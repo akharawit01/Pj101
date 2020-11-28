@@ -5,7 +5,6 @@ import Box from "@material-ui/core/Box";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogTitleText from "@material-ui/core/DialogTitle";
 import { makeStyles, createStyles } from "@material-ui/core/styles";
 import JobForm from "../JobForm";
 
