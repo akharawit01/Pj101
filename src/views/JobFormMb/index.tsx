@@ -5,7 +5,7 @@ import Box from "@material-ui/core/Box";
 import Fab from "@material-ui/core/Fab";
 import AddIcon from "@material-ui/icons/Add";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
+import DialogTitleText from "@material-ui/core/DialogTitle";
 import { makeStyles, createStyles } from "@material-ui/core/styles";
 import JobForm from "../JobForm";
 
@@ -35,7 +35,7 @@ const JobFormMb: React.FC = () => {
   return (
     <>
       <Fab
-        color="primary"
+        color="secondary"
         aria-label="add"
         onClick={handleClickOpen}
         className={classes.fab}
@@ -46,13 +46,10 @@ const JobFormMb: React.FC = () => {
         open={open}
         onClose={handleClose}
         aria-labelledby="form-dialog-title"
-        fullWidth
+        fullScreen
       >
         <DialogContent>
-          <DialogContentText>
-            To subscribe to this website, please enter your email address here.
-            We will send updates occasionally.
-          </DialogContentText>
+          <h2>เพิ่มงาน</h2>
           <JobForm callBack={handleClose} />
           <Box my={2}>
             <Button onClick={handleClose} color="primary" fullWidth>

@@ -3,7 +3,6 @@ import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import Box from "@material-ui/core/Box";
 import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
 import JobForm from "../JobForm";
 import { Job } from "services/job";
 
@@ -32,13 +31,10 @@ const Jobs: React.FC<{
         open={open}
         onClose={handleClose}
         aria-labelledby="form-dialog-title"
-        fullWidth
+        fullScreen
       >
         <DialogContent>
-          <DialogContentText>
-            To subscribe to this website, please enter your email address here.
-            We will send updates occasionally.
-          </DialogContentText>
+          <h2>แก้ไขงาน</h2>
           <JobForm {...rest} callBack={handleClose} />
           <Box my={2}>
             <Button
