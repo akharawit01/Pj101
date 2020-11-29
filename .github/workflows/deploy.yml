@@ -15,7 +15,7 @@ jobs:
       - name: Install Dependencies
         run: yarn
       - name: Build
-        run: yarn build
+        run: CI=true yarn build
       - name: Archive Production Artifact
         uses: actions/upload-artifact@master
         with:
