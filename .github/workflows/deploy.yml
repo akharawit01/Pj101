@@ -14,9 +14,6 @@ jobs:
       - name: Install Dependencies
         run: yarn
       - name: Build
-        run: CI=true yarn build
-      - name: Archive Production Artifact
-        uses: actions/upload-artifact@master
         env:
           REACT_APP_FB_API_KEY: ${{ secrets.REACT_APP_FB_API_KEY }}
           REACT_APP_FB_APP_ID: ${{ secrets.REACT_APP_FB_APP_ID }}
@@ -25,6 +22,9 @@ jobs:
           REACT_APP_FB_MSG_ID: ${{ secrets.REACT_APP_FB_MSG_ID }}
           REACT_APP_FB_PJ_ID: ${{ secrets.REACT_APP_FB_PJ_ID }}
           REACT_APP_FB_STORE: ${{ secrets.REACT_APP_FB_STORE }}
+        run: yarn build
+      - name: Archive Production Artifact
+        uses: actions/upload-artifact@master
         with:
           name: build
           path: build
