@@ -99,6 +99,7 @@ const CustomerAutosuggest = (props: any) => {
     } else {
       setValue(input.value);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [input.value]);
 
   const onChange = (event: object, { newValue }: { newValue: string }) => {
