@@ -4,15 +4,6 @@ on:
     branches:
       - main
 
-env:
-  REACT_APP_FB_API_KEY: ${{ secrets.REACT_APP_FB_API_KEY }}
-  REACT_APP_FB_APP_ID: ${{ secrets.REACT_APP_FB_APP_ID }}
-  REACT_APP_FB_AUTH_DOMAIN: ${{ secrets.REACT_APP_FB_AUTH_DOMAIN }}
-  REACT_APP_FB_DB_URL: ${{ secrets.REACT_APP_FB_DB_URL }}
-  REACT_APP_FB_MSG_ID: ${{ secrets.REACT_APP_FB_MSG_ID }}
-  REACT_APP_FB_PJ_ID: ${{ secrets.REACT_APP_FB_PJ_ID }}
-  REACT_APP_FB_STORE: ${{ secrets.REACT_APP_FB_STORE }}
-
 jobs:
   build:
     name: Build
@@ -26,6 +17,14 @@ jobs:
         run: CI=true yarn build
       - name: Archive Production Artifact
         uses: actions/upload-artifact@master
+        env:
+          REACT_APP_FB_API_KEY: ${{ secrets.REACT_APP_FB_API_KEY }}
+          REACT_APP_FB_APP_ID: ${{ secrets.REACT_APP_FB_APP_ID }}
+          REACT_APP_FB_AUTH_DOMAIN: ${{ secrets.REACT_APP_FB_AUTH_DOMAIN }}
+          REACT_APP_FB_DB_URL: ${{ secrets.REACT_APP_FB_DB_URL }}
+          REACT_APP_FB_MSG_ID: ${{ secrets.REACT_APP_FB_MSG_ID }}
+          REACT_APP_FB_PJ_ID: ${{ secrets.REACT_APP_FB_PJ_ID }}
+          REACT_APP_FB_STORE: ${{ secrets.REACT_APP_FB_STORE }}
         with:
           name: build
           path: build
